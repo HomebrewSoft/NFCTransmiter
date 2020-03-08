@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 
 public class NFCController {
 	public static void waitForDevice() {
-		ProcessBuilder processGetURL = new ProcessBuilder("bash", "-c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
+		ProcessBuilder processGetURL = new ProcessBuilder("cmd.exe", "/c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
         try {
             Process process = processGetURL.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -26,7 +26,7 @@ public class NFCController {
 	}
 	
 	public static void sendURL(String url) {
-		ProcessBuilder processSendURL = new ProcessBuilder("bash", "-c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
+		ProcessBuilder processSendURL = new ProcessBuilder("cmd.exe", "/c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
         try {
             Process process = processSendURL.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
