@@ -203,7 +203,9 @@ public class Main {
 			    }
 			};
 			while (true) {
-				NFCController.waitForDevice();
+				while(!NFCController.waitForDevice()) { 
+					// keep trying until device is found
+				}
 				HashMap<String, Object> lastOrder = (HashMap<String, Object>) getLastPoSOrder(models);
 				int order_id = (int)(lastOrder.get("id"));
 				if (last_order_id != order_id) {
@@ -221,7 +223,9 @@ public class Main {
 				}
 				System.out.println("URL lista: " + last_url);
 				last_order_id = order_id;
-				NFCController.sendURL(last_url);
+				while (!NFCController.sendURL(last_url)) {
+					// try again until the URL is successfully sent
+				}
 			}
 	    }
 	    catch (MalformedURLException e) {
