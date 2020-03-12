@@ -10,7 +10,7 @@ public class NFCController {
 	 * @return false if device not found, true otherwise
 	 */
 	public static boolean waitForDevice() {
-		ProcessBuilder processGetURL = new ProcessBuilder("bash", "-c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
+		ProcessBuilder processGetURL = new ProcessBuilder("cmd.exe", "/c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
         boolean deviceFound = false;
 		try {
             Process process = processGetURL.start();
@@ -39,7 +39,7 @@ public class NFCController {
 	 * @return true if URL successfully sent, false otherwise
 	 */
 	public static boolean sendURL(String url) {
-		ProcessBuilder processSendURL = new ProcessBuilder("bash", "-c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
+		ProcessBuilder processSendURL = new ProcessBuilder("cmd.exe", "/c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
         boolean urlSuccessfullySent = false;
 		try {
             Process process = processSendURL.start();
