@@ -51,10 +51,17 @@ public class NFCController {
                     urlSuccessfullySent = true;
                 	break;
                 }
+                else if(line.equals("javax.smartcardio.CardException: connect() failed") ) {
+                	System.out.println("Error al acceder al lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo cuando se muestre el mensaje \"Enviando URL\"");
+                	Thread.sleep(3000);
+                	break;
+                }
             }
             process.destroy();
-            System.out.println(urlSuccessfullySent ? "URL enviada, espere 5 segundos para la siguiente transaccion" : "Error en transmisión, intentando de nuevo");
-            Thread.sleep(5000);
+            if (urlSuccessfullySent) {
+            	System.out.println("URL enviada, espere 5 segundos para la siguiente transaccion");
+            	Thread.sleep(5000);            	
+            }
         }
         catch (IOException e) {
             e.printStackTrace();
