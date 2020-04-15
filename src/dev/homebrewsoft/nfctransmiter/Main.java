@@ -203,31 +203,25 @@ public class Main {
 			        });
 			    }
 			};
-			while (true) {
-				while(!NFCController.waitForDevice()) { 
-					// keep trying until device is found
-				}
-				HashMap<String, Object> lastOrder = (HashMap<String, Object>) getLastPoSOrder(models);
-				int order_id = (int)(lastOrder.get("id"));
-				if (last_order_id != order_id) {
-					System.out.println("Generando nueva URL");
-					int company_id = (int)((Object[])lastOrder.get("company_id"))[0];
-					HashMap<String, Object> company = (HashMap<String, Object>) getCompany(models, company_id);
-					List<Object> lines = getLines(models, order_id);
-					List<Object> payments = getPayments(models, order_id);
-					String jsonBody = toJSON(lastOrder, company, lines, payments);
-					//System.out.println(jsonBody);
-					APIQuery apiquery = new APIQuery("https://europe-west1-freetix-dev.cloudfunctions.net/api/invoices", jsonBody);
-					String response = apiquery.getResponse();
-					//System.out.println(response);
-					last_url = getTargetURL(response);
-				}
-				System.out.println("URL lista: " + last_url);
-				last_order_id = order_id;
-				while (!NFCController.sendURL(last_url)) {
-					// try again until the URL is successfully sent
-				}
+			HashMap<String, Object> lastOrder = (HashMap<String, Object>) getLastPoSOrder(models);
+			int order_id = (int)(lastOrder.get("id"));
+			if (last_order_id != order_id) {
+				System.out.println("Generando nueva URL");
+				int company_id = (int)((Object[])lastOrder.get("company_id"))[0];
+				HashMap<String, Object> company = (HashMap<String, Object>) getCompany(models, company_id);
+				List<Object> lines = getLines(models, order_id);
+				List<Object> payments = getPayments(models, order_id);
+				String jsonBody = toJSON(lastOrder, company, lines, payments);
+				//System.out.println(jsonBody);
+				APIQuery apiquery = new APIQuery("https://europe-west1-freetix-dev.cloudfunctions.net/api/invoices", jsonBody);
+				String response = apiquery.getResponse();
+				//System.out.println(response);
+				last_url = getTargetURL(response);
 			}
+			
+			System.out.println("URL lista: " + last_url);
+			last_order_id = order_id;
+			System.out.println(NFCController.sendURL(last_url));
 	    }
 	    catch (MalformedURLException e) {
 			e.printStackTrace();

@@ -60,30 +60,26 @@ public class NFCController {
             String line;
             System.out.println("Enviando URL");
             while ((line = reader.readLine()) != null) {
+            	System.out.println(line);
                 if (line.equals("INFO : org.nfctools.examples.snep.SnepAgentListenterImpl - SNEP succeeded")) {
                     urlSuccessfullySent = true;
                 	break;
                 }
                 else if(line.equals("javax.smartcardio.CardException: connect() failed") ) {
-                	System.out.println("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo cuando se muestre el mensaje \"Enviando URL\"");
-                	Thread.sleep(3000);
+                	System.out.println("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.");
                 	break;
                 }
-                else if (line.equals("Exception in thread \"main\" java.lang.IllegalArgumentException: No supported card terminal found. Available Terminals")) {
+                else if (line.indexOf("No supported card terminal found") > -1) {
                 	System.out.println("No se ha encontrado lector de tarjetas válido");
-                	Thread.sleep(3000);
                 	break;
                 }
             }
             process.destroy();
             if (urlSuccessfullySent) {
-            	System.out.println("URL enviada, espere 5 segundos para la siguiente transaccion");
-            	Thread.sleep(5000);            	
+            	System.out.println("URL enviada");      	
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+		catch (IOException e) {
             e.printStackTrace();
         }
 		return urlSuccessfullySent;

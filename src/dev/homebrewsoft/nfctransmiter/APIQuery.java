@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -27,8 +28,8 @@ public class APIQuery {
             URL url = new URL(this.url);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
-            con.setConnectTimeout(5000);
-            con.setReadTimeout(5000);
+            con.setConnectTimeout(8000);
+            con.setReadTimeout(8000);
             con.setInstanceFollowRedirects(false);
             con.setRequestProperty("Content-Type", "application/json");
             con.setDoOutput(true);
@@ -48,6 +49,10 @@ public class APIQuery {
             con.disconnect();
 
         } 
+        catch (SocketTimeoutException e) {
+        	e.printStackTrace();
+        	return null;
+        }
         catch (IOException e) {
             e.printStackTrace();
         }
