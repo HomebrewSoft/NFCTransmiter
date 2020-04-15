@@ -186,6 +186,7 @@ public class Main {
     
 	public static void main(String[] args) {
 		loadConfig();
+		// System.out.println(System.getProperty("os.name"));
 		final XmlRpcClient client = new XmlRpcClient();
 		final XmlRpcClientConfigImpl common_config = new XmlRpcClientConfigImpl();
 	    try {

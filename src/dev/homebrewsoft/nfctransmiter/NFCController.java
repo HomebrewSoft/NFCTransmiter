@@ -10,8 +10,15 @@ public class NFCController {
 	 * @return false if device not found, true otherwise
 	 */
 	public static boolean waitForDevice() {
-		ProcessBuilder processGetURL = new ProcessBuilder("bash", "-c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
-        boolean deviceFound = false;
+		ProcessBuilder processGetURL = null;
+		// check if system is windows
+		if (System.getProperty("os.name").toLowerCase().indexOf("win") > -1) {
+			processGetURL = new ProcessBuilder("cmd.exe", "/c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
+		}
+		else {
+			processGetURL = new ProcessBuilder("bash", "-c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo");
+		}
+		boolean deviceFound = false;
 		try {
             Process process = processGetURL.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -39,8 +46,14 @@ public class NFCController {
 	 * @return true if URL successfully sent, false otherwise
 	 */
 	public static boolean sendURL(String url) {
-		ProcessBuilder processSendURL = new ProcessBuilder("bash", "-c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
-        boolean urlSuccessfullySent = false;
+		ProcessBuilder processSendURL = null;
+        if (System.getProperty("os.name").toLowerCase().indexOf("win") > -1) {
+        	processSendURL = new ProcessBuilder("cmd.exe", "/c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
+        }
+        else {
+        	processSendURL = new ProcessBuilder("bash", "-c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
+        }
+		boolean urlSuccessfullySent = false;
 		try {
             Process process = processSendURL.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -52,7 +65,12 @@ public class NFCController {
                 	break;
                 }
                 else if(line.equals("javax.smartcardio.CardException: connect() failed") ) {
-                	System.out.println("Error al acceder al lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo cuando se muestre el mensaje \"Enviando URL\"");
+                	System.out.println("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo cuando se muestre el mensaje \"Enviando URL\"");
+                	Thread.sleep(3000);
+                	break;
+                }
+                else if (line.equals("Exception in thread \"main\" java.lang.IllegalArgumentException: No supported card terminal found. Available Terminals")) {
+                	System.out.println("No se ha encontrado lector de tarjetas válido");
                 	Thread.sleep(3000);
                 	break;
                 }
