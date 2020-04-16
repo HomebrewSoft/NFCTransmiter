@@ -1,6 +1,9 @@
 package dev.homebrewsoft.nfctransmiter;
 
 import java.util.HashMap;
+
+import javax.swing.JTextArea;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,8 +28,8 @@ public class Main {
     static int CONFIG_ID = 1;
     
     private static int uid;
-    static int last_order_id = -1;
-    static String last_url = "";
+    private static int last_order_id = -1;
+    private static String last_url = "";
     
     public static void loadConfig() {
 		try {
@@ -184,12 +187,13 @@ public class Main {
     	return json.split("\"")[3];
     }
     
-	public static void main(String[] args) {
+	public static void process(JTextArea output) {
 		loadConfig();
 		// System.out.println(System.getProperty("os.name"));
 		final XmlRpcClient client = new XmlRpcClient();
 		final XmlRpcClientConfigImpl common_config = new XmlRpcClientConfigImpl();
 	    try {
+	    	output.append("Obteniendo datos de factura... \n");;
 			common_config.setServerURL(new URL(String.format("%s/xmlrpc/common", url)));
 			uid = (int) client.execute(common_config, "authenticate", Arrays.asList(db, username, password, Collections.emptyMap()));
 		    XmlRpcClient models;
@@ -207,6 +211,7 @@ public class Main {
 			int order_id = (int)(lastOrder.get("id"));
 			if (last_order_id != order_id) {
 				System.out.println("Generando nueva URL");
+				output.append("Generando URL... \n");
 				int company_id = (int)((Object[])lastOrder.get("company_id"))[0];
 				HashMap<String, Object> company = (HashMap<String, Object>) getCompany(models, company_id);
 				List<Object> lines = getLines(models, order_id);
@@ -216,18 +221,30 @@ public class Main {
 				APIQuery apiquery = new APIQuery("https://europe-west1-freetix-dev.cloudfunctions.net/api/invoices", jsonBody);
 				String response = apiquery.getResponse();
 				//System.out.println(response);
-				last_url = getTargetURL(response);
+				if (response != null) {
+					last_url = getTargetURL(response);
+				}
+				else {
+					output.append("Error al obtener la url\n");
+					return;
+				}
 			}
-			
-			System.out.println("URL lista: " + last_url);
+			output.append("URL lista: " + last_url + "\n");
 			last_order_id = order_id;
-			System.out.println(NFCController.sendURL(last_url));
+			output.append("Enviando URL.\n");
+			if (NFCController.sendURL(last_url)) {
+				output.append("URL enviada exitosamente.\n");
+			}
+			else {
+				output.append("Error al enviar URL. Inicie en modo consola para más información\n");
+			}
 	    }
 	    catch (MalformedURLException e) {
 			e.printStackTrace();
 	    }
 		catch (XmlRpcException e) {
 			e.printStackTrace();
+			output.append("Error obteniendo datos de la factura.\n");
 		}
 	    catch (IndexOutOfBoundsException e) {
 	    	e.printStackTrace();

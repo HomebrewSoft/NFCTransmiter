@@ -60,12 +60,11 @@ public class NFCController {
             String line;
             System.out.println("Enviando URL");
             while ((line = reader.readLine()) != null) {
-            	System.out.println(line);
-                if (line.equals("INFO : org.nfctools.examples.snep.SnepAgentListenterImpl - SNEP succeeded")) {
+                if (line.indexOf("SNEP succeeded") > -1) {
                     urlSuccessfullySent = true;
                 	break;
                 }
-                else if(line.equals("javax.smartcardio.CardException: connect() failed") ) {
+                else if(line.indexOf("connect() failed") > -1) {
                 	System.out.println("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.");
                 	break;
                 }
