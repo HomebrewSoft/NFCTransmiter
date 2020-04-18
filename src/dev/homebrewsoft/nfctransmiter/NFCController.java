@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import javax.swing.JTextArea;
+
 public class NFCController {
 	/**
 	 * 
@@ -45,7 +47,7 @@ public class NFCController {
 	 * @param url String to be sent in URL format to device
 	 * @return true if URL successfully sent, false otherwise
 	 */
-	public static boolean sendURL(String url) {
+	public static boolean sendURL(String url, JTextArea output) {
 		ProcessBuilder processSendURL = null;
         if (System.getProperty("os.name").toLowerCase().indexOf("win") > -1) {
         	processSendURL = new ProcessBuilder("cmd.exe", "/c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
@@ -59,19 +61,28 @@ public class NFCController {
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             System.out.println("Enviando URL");
+            boolean toggleDeviceReady = false;
             while ((line = reader.readLine()) != null) {
-                if (line.indexOf("SNEP succeeded") > -1) {
-                    urlSuccessfullySent = true;
-                	break;
-                }
-                else if(line.indexOf("connect() failed") > -1) {
-                	System.out.println("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.");
-                	break;
-                }
-                else if (line.indexOf("No supported card terminal found") > -1) {
-                	System.out.println("No se ha encontrado lector de tarjetas válido");
-                	break;
-                }
+            	if (toggleDeviceReady) {
+	                if (line.indexOf("SNEP succeeded") > -1) {
+	                    urlSuccessfullySent = true;
+	                	break;
+	                }
+	                else if(line.indexOf("connect() failed") > -1) {
+	                	output.append("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.\n");
+	                	break;
+	                }
+	                else if (line.indexOf("No supported card terminal found") > -1) {
+	                	output.append("No se ha encontrado lector de tarjetas válido\n");
+	                	break;
+	                }
+            	}
+            	else {
+            		if (line.indexOf("FF0000002DD48C0008001234564001FE0100000000000000000000000000FFFF01FE01000000000000000646666D01011000") > -1) {
+                    	output.append("Todo listo para el envío, acerce el dispisitivo a la terminal.\n");
+            			toggleDeviceReady = true;
+                    }
+            	}
             }
             process.destroy();
             if (urlSuccessfullySent) {
