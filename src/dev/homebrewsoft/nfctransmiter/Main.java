@@ -231,12 +231,11 @@ public class Main {
 			}
 			output.append("URL lista: " + last_url + "\n");
 			last_order_id = order_id;
-			output.append("Enviando URL.\n");
 			if (NFCController.sendURL(last_url, output)) {
 				output.append("URL enviada exitosamente.\n");
 			}
 			else {
-				output.append("Error al enviar URL.\n");
+				output.append("Error al enviar URL. Inténtelo de nuevo.\n");
 			}
 	    }
 	    catch (MalformedURLException e) {

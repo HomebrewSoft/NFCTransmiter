@@ -1,8 +1,10 @@
 package dev.homebrewsoft.nfctransmiter;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 import javax.swing.JTextArea;
 
@@ -50,48 +52,72 @@ public class NFCController {
 	public static boolean sendURL(String url, JTextArea output) {
 		ProcessBuilder processSendURL = null;
         if (System.getProperty("os.name").toLowerCase().indexOf("win") > -1) {
-        	processSendURL = new ProcessBuilder("cmd.exe", "/c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
+        	processSendURL = new ProcessBuilder("cmd.exe", "/c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
         }
         else {
-        	processSendURL = new ProcessBuilder("bash", "-c","java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
+        	processSendURL = new ProcessBuilder("bash", "-c", "java -cp lib/nfctools-examples.jar org.nfctools.examples.snep.SnepDemo -url " + url + " -target");
         }
 		boolean urlSuccessfullySent = false;
+		Process process = null;
+		
 		try {
-            Process process = processSendURL.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            process = processSendURL.start();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             String line;
-            System.out.println("Enviando URL");
+			output.append("Preparando dispositivo para enviar URL.\n");
             boolean toggleDeviceReady = false;
-            while ((line = reader.readLine()) != null) {
-            	if (toggleDeviceReady) {
-	                if (line.indexOf("SNEP succeeded") > -1) {
-	                    urlSuccessfullySent = true;
-	                	break;
-	                }
-	                else if(line.indexOf("connect() failed") > -1) {
-	                	output.append("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.\n");
-	                	break;
-	                }
-	                else if (line.indexOf("No supported card terminal found") > -1) {
-	                	output.append("No se ha encontrado lector de tarjetas válido\n");
-	                	break;
-	                }
-            	}
-            	else {
-            		if (line.indexOf("FF0000002DD48C0008001234564001FE0100000000000000000000000000FFFF01FE01000000000000000646666D01011000") > -1) {
-                    	output.append("Todo listo para el envío, acerce el dispisitivo a la terminal.\n");
-            			toggleDeviceReady = true;
-                    }
-            	}
+            Thread timer = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(3000);
+						output.append("No se encontró dispositivo NFC. Inténtelo de nuevo.\n");
+	                	try {
+							writer.write("\n");
+							writer.flush();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} catch (InterruptedException e) {
+						//e.printStackTrace();
+					}
+				}
+			});
+            timer.start();
+            while (((line = reader.readLine()) != null)) {
+            	System.out.println(line);
+                if (line.indexOf("SNEP succeeded") > -1) {
+                    urlSuccessfullySent = true;
+                	writer.write("\n");
+                	writer.flush();
+                }
+                else if(line.indexOf("connect() failed") > -1) {
+                	output.append("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.\n");
+                	writer.write("\n");
+                	writer.flush();
+                }
+                else if (line.indexOf("No supported card terminal found") > -1) {
+                	output.append("No se ha encontrado lector de tarjetas válido\n");
+                	writer.write("\n");
+                	writer.flush();
+                }
+                else if ((line.indexOf("FF0000002DD48C0008001234564001FE0100000000000000000000000000FFFF01FE01000000000000000646666D01011000") != -1) && !toggleDeviceReady) {
+                	output.append("Todo listo para el envío, acerce el dispisitivo a la terminal.\n");
+                	timer.interrupt();
+                	toggleDeviceReady = true;
+                }
             }
-            process.destroy();
-            if (urlSuccessfullySent) {
-            	System.out.println("URL enviada");      	
-            }
+			reader.close();
+			writer.close();
         }
 		catch (IOException e) {
             e.printStackTrace();
         }
+		finally {
+			process.destroy();
+		}
 		return urlSuccessfullySent;
 	}
 }
