@@ -23,8 +23,7 @@ public class GUI {
 	public static void main(String args[]) {
 		JFrame frame = new JFrame("Enviar URL de factura por NFC");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(400, 200);
-		frame.setBounds(200, 200, 500, 300);
+		frame.setBounds(200, 200, 600, 300);
 		
 		GridLayout grid = new GridLayout(0, 1);
 		

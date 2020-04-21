@@ -66,7 +66,7 @@ public class NFCController {
             final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             String line;
 			output.append("Preparando dispositivo para enviar URL.\n");
-            boolean toggleDeviceReady = false;
+            boolean toggleDeviceReady = false, toggleDevicePosition = false;
             Thread timer = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -89,24 +89,33 @@ public class NFCController {
             while (((line = reader.readLine()) != null)) {
             	System.out.println(line);
                 if (line.indexOf("SNEP succeeded") > -1) {
-                    urlSuccessfullySent = true;
                 	writer.write("\n");
                 	writer.flush();
+                	urlSuccessfullySent = true;
+                	toggleDevicePosition = false;
                 }
                 else if(line.indexOf("connect() failed") > -1) {
                 	output.append("Preparando lector de tarjetas. Por favor aleje el dispositivo e intente de nuevo.\n");
                 	writer.write("\n");
                 	writer.flush();
+                    toggleDevicePosition = false;
                 }
                 else if (line.indexOf("No supported card terminal found") > -1) {
-                	output.append("No se ha encontrado lector de tarjetas válido\n");
+                	output.append("No se ha encontrado lector de tarjetas válido.\n");
                 	writer.write("\n");
                 	writer.flush();
+                    toggleDevicePosition = false;
                 }
                 else if ((line.indexOf("FF0000002DD48C0008001234564001FE0100000000000000000000000000FFFF01FE01000000000000000646666D01011000") != -1) && !toggleDeviceReady) {
-                	output.append("Todo listo para el envío, acerce el dispisitivo a la terminal.\n");
+                	output.append("Todo listo para el envío, acerque el dispisitivo a la terminal.\n");
                 	timer.interrupt();
                 	toggleDeviceReady = true;
+                    toggleDevicePosition = false;
+                }
+                else if (line.indexOf("Waiting while card present") > -1 && !toggleDevicePosition) {
+                	output.append("Teléfono mal posicionado detectado, por favor aléjelo un poco y vuelva a intentar.\n");
+                	toggleDevicePosition = true;
+                	toggleDeviceReady = false;
                 }
             }
 			reader.close();
